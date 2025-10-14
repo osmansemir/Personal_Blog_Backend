@@ -17,8 +17,10 @@ const app = express();
 app.use(cors());
 if (process.env.NODE_ENV === "development") app.use(morgan("tiny"));
 app.use(express.json()); // Parse incoming JSON
-app.use("/api/articles", articleRoutes); // Mount the routes
-app.use("/auth", authRoutes); // Mount the routes
+
+// Mount the routes
+app.use("/api/articles", articleRoutes);
+app.use("/api/auth", authRoutes);
 
 // Basic route
 app.get("/", (req, res) => {

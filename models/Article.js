@@ -24,9 +24,9 @@ const articleSchema = new mongoose.Schema(
       trim: true,
     },
     author: {
-      type: String,
-      default: "Osman Semir",
-      trim: true,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
     },
     markdown: {
       type: String,

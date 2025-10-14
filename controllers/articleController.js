@@ -31,9 +31,9 @@ export const createArticle = async (req, res) => {
     slug,
     tags,
     description,
-    author,
     markdown,
     featured,
+    author: req.user._id,
   });
 
   try {
