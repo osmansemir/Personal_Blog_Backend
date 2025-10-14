@@ -22,13 +22,13 @@ const userSchema = new mongoose.Schema(
     },
     type: {
       type: String,
-      enum: ["user", "admin"],
+      enum: ["user", "admin", "author"],
       default: "user",
     },
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 // Hash password before saving
