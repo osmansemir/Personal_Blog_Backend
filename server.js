@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import connectDB from "./config/db.js";
 import morgan from "morgan";
 import articleRoutes from "./routes/articleRoutes.js";
+import authRoutes from "./routes/authRoutes.js";
 import mongoose from "mongoose";
 
 dotenv.config();
@@ -17,6 +18,7 @@ app.use(cors());
 if (process.env.NODE_ENV === "development") app.use(morgan("tiny"));
 app.use(express.json()); // Parse incoming JSON
 app.use("/api/articles", articleRoutes); // Mount the routes
+app.use("/auth", authRoutes); // Mount the routes
 
 // Basic route
 app.get("/", (req, res) => {
