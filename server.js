@@ -5,6 +5,7 @@ import connectDB from "./config/db.js";
 import morgan from "morgan";
 import articleRoutes from "./routes/articleRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
+import userRoutes from "./routes/userRoutes.js";
 import mongoose from "mongoose";
 
 dotenv.config();
@@ -21,6 +22,7 @@ app.use(express.json()); // Parse incoming JSON
 // Mount the routes
 app.use("/api/articles", articleRoutes);
 app.use("/api/auth", authRoutes);
+app.use("/api/users", userRoutes);
 
 // Basic route
 app.get("/", (req, res) => {
