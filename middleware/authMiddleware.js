@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
+import Article from "../models/Article.js";
 
 export const protect = async (req, res, next) => {
   let token;
@@ -36,4 +37,28 @@ export const authorizeRoles = (...roles) => {
     }
     next();
   };
+};
+
+export const authorizeOwnership = async (req, res, next) => {
+  try {
+    const article = await Article.findById(req.params.id);
+
+    if (!article) {
+      return res.status(404).json({ message: "Article not found" });
+    }
+
+    // Check ownership or admin role
+    if (
+      article.author.toString() !== req.user._id.toString() &&
+      req.user.role !== "admin"
+    ) {
+      return res
+        .status(403)
+        .json({ message: "You are not allowed to modify this article" });
+    }
+
+    next();
+  } catch (err) {
+    res.status(500).json({ message: "Server error", error: err.message });
+  }
 };
