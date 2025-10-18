@@ -7,7 +7,11 @@ import {
   updateArticle,
   deleteArticle,
 } from "../controllers/articleController.js";
-import { protect, authorizeRoles } from "../middleware/authMiddleware.js";
+import {
+  protect,
+  authorizeRoles,
+  authorizeOwnership,
+} from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
@@ -21,6 +25,7 @@ router.delete(
   "/:id",
   protect,
   authorizeRoles("admin", "author"),
+  authorizeOwnership,
   deleteArticle,
 ); // DELETE one
 

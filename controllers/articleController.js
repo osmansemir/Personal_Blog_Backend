@@ -1,40 +1,40 @@
 import Article from "../models/Article.js";
+import { createError } from "../utils/createError.js";
 
 // Get all articles
-export const getArticles = async (req, res) => {
+export const getArticles = async (req, res, next) => {
   try {
     const articles = await Article.find();
     res.json(articles);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    next(err);
   }
 };
 
 // Get User articles
-export const getUserArticles = async (req, res) => {
+export const getUserArticles = async (req, res, next) => {
   try {
-    const articles = await Article.find({ _id: req.params.id });
+    const articles = await Article.find({ author: req.params.id });
     res.json(articles);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    next(err);
   }
 };
 
 // Get a single article by slug
-export const getArticle = async (req, res) => {
+export const getArticle = async (req, res, next) => {
   try {
     const article = await Article.findOne({ slug: req.params.slug });
-    if (!article) return res.status(404).json({ message: "Article not found" });
+    if (!article) throw createError(404, "Article not found");
     res.json(article);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    next(err);
   }
 };
 
 // Create a new article
-export const createArticle = async (req, res) => {
-  const { title, slug, tags, description, author, markdown, featured } =
-    req.body;
+export const createArticle = async (req, res, next) => {
+  const { title, slug, tags, description, markdown, featured } = req.body;
 
   const newArticle = new Article({
     title,
@@ -50,33 +50,33 @@ export const createArticle = async (req, res) => {
     const savedArticle = await newArticle.save();
     res.status(201).json(savedArticle);
   } catch (err) {
-    res.status(400).json({ message: err.message });
+    next(err);
   }
 };
 
 // Update an article
-export const updateArticle = async (req, res) => {
+export const updateArticle = async (req, res, next) => {
   try {
     const updatedArticle = await Article.findByIdAndUpdate(
       req.params.id,
       req.body,
       { new: true, runValidators: true }, // return the updated doc
     );
-    if (!updatedArticle)
-      return res.status(404).json({ message: "Article not found" });
+    if (!updatedArticle) throw createError(404, "Article not found");
+
     res.json(updatedArticle);
   } catch (err) {
-    res.status(400).json({ message: err.message });
+    next(err);
   }
 };
 
 // Delete an article
-export const deleteArticle = async (req, res) => {
+export const deleteArticle = async (req, res, next) => {
   try {
     const deleted = await Article.findByIdAndDelete(req.params.id);
     if (!deleted) return res.status(404).json({ message: "Article not found" });
     res.json({ message: "Article deleted successfully" });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    next(err);
   }
 };

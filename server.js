@@ -7,6 +7,7 @@ import articleRoutes from "./routes/articleRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import mongoose from "mongoose";
+import errorHandler from "./middleware/errorMiddleware.js";
 
 dotenv.config();
 
@@ -24,10 +25,8 @@ app.use("/api/articles", articleRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 
-// Basic route
-app.get("/", (req, res) => {
-  res.send("Hello from server");
-});
+// Error Middleware
+app.use(errorHandler);
 
 // START SERVER
 const PORT = process.env.PORT || 5000;

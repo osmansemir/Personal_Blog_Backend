@@ -1,48 +1,47 @@
 import User from "../models/User.js";
 import jwt from "jsonwebtoken";
+import { createError } from "../utils/createError.js";
 
-export const registerUser = async (req, res) => {
+export const registerUser = async (req, res, next) => {
   try {
     const { name, email, password, role } = req.body;
 
-    // 1️⃣ Check if user already exists
+    //  Check if user already exists
     const existingUser = await User.findOne({ email });
-    if (existingUser)
-      return res.status(400).json({ message: "Email already registered" });
+    if (existingUser) throw createError(400, "Email already registered");
 
-    // 2️⃣ Create user
+    //  Create user
     const newUser = new User({ name, email, password, role });
     await newUser.save();
 
-    // 3️⃣ Return response
+    //  Return response
     res.status(201).json({ message: "User registered successfully" });
   } catch (error) {
-    res.status(500).json({ message: "Server error", error: error.message });
+    next(error);
   }
 };
 
-export const loginUser = async (req, res) => {
+export const loginUser = async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
-    // 1️⃣ Find user
-    const user = await User.findOne({ email });
-    if (!user)
-      return res.status(400).json({ message: "Invalid email or password" });
+    //  Find user
+    const user = await User.findOne({ email }).select("+password");
+    if (!user) throw createError(400, "Invalid email or password");
 
-    // 2️⃣ Compare entered password with stored hash
+    //  Compare entered password with stored hash
+    console.log(req.body);
     const isMatch = await user.comparePassword(password);
-    if (!isMatch)
-      return res.status(400).json({ message: "Invalid email or password" });
+    if (!isMatch) throw createError(400, "Invalid email or password");
 
-    // 3️⃣ Create a JWT token
+    //  Create a JWT token
     const token = jwt.sign(
       { id: user._id, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: "1d" }, // expires in 1 day
     );
 
-    // 4️⃣ Send token and user info
+    //  Send token and user info
     res.status(200).json({
       message: "Login successful",
       token,
@@ -54,6 +53,6 @@ export const loginUser = async (req, res) => {
       },
     });
   } catch (error) {
-    res.status(500).json({ message: "Server error", error: error.message });
+    next(error);
   }
 };

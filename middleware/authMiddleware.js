@@ -1,6 +1,7 @@
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 import Article from "../models/Article.js";
+import { createError } from "../utils/createError.js";
 
 export const protect = async (req, res, next) => {
   let token;
@@ -22,18 +23,17 @@ export const protect = async (req, res, next) => {
       // 4️⃣ Continue to the next middleware/route
       next();
     } else {
-      return res.status(401).json({ message: "Not authorized, no token" });
+      throw createError(401, "Not authorized, invalid token");
     }
   } catch (error) {
-    console.error(error);
-    return res.status(401).json({ message: "Not authorized, invalid token" });
+    next(error);
   }
 };
 
 export const authorizeRoles = (...roles) => {
   return (req, res, next) => {
     if (!roles.includes(req.user.role)) {
-      return res.status(403).json({ message: "Access denied" });
+      return next(createError(403, "Access denied"));
     }
     next();
   };
@@ -44,21 +44,18 @@ export const authorizeOwnership = async (req, res, next) => {
     const article = await Article.findById(req.params.id);
 
     if (!article) {
-      return res.status(404).json({ message: "Article not found" });
+      throw createError(404, "Article not found");
     }
 
-    // Check ownership or admin role
     if (
       article.author.toString() !== req.user._id.toString() &&
       req.user.role !== "admin"
     ) {
-      return res
-        .status(403)
-        .json({ message: "You are not allowed to modify this article" });
+      throw createError(403, "You are not allowed to modify this article");
     }
 
     next();
-  } catch (err) {
-    res.status(500).json({ message: "Server error", error: err.message });
+  } catch (error) {
+    next(error);
   }
 };
