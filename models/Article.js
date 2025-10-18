@@ -36,6 +36,28 @@ const articleSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    status: {
+      type: String,
+      enum: ["draft", "pending", "approved", "rejected"],
+      default: "draft",
+    },
+    rejectionReason: {
+      type: String,
+      default: null,
+    },
+    submittedAt: {
+      type: Date,
+      default: null,
+    },
+    reviewedAt: {
+      type: Date,
+      default: null,
+    },
+    reviewedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
   },
   {
     timestamps: true, // adds createdAt and updatedAt automatically

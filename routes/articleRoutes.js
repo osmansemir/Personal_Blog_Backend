@@ -6,11 +6,17 @@ import {
   createArticle,
   updateArticle,
   deleteArticle,
+  getMyArticles,
+  submitForReview,
+  getPendingArticles,
+  approveArticle,
+  rejectArticle,
 } from "../controllers/articleController.js";
 import {
   protect,
   authorizeRoles,
   authorizeOwnership,
+  optionalAuth,
 } from "../middleware/authMiddleware.js";
 import { validate, validateParams } from "../middleware/validateRequest.js";
 import {
@@ -18,13 +24,14 @@ import {
   updateArticleSchema,
   articleIdSchema,
   articleSlugSchema,
+  rejectArticleSchema,
 } from "../validators/articleValidators.js";
 import { createArticleLimiter } from "../middleware/rateLimiter.js";
 
 const router = express.Router();
 
-// Routes
-router.get("/", getArticles); // GET all
+// Public routes (with optional auth for admin status filtering)
+router.get("/", optionalAuth, getArticles); // GET all approved (or filter by status if admin)
 router.get("/user/:id", validateParams(articleIdSchema), getUserArticles); // GET all articles of one user
 router.get("/:slug", validateParams(articleSlugSchema), getArticle); // GET one by slug
 router.post(
@@ -52,5 +59,38 @@ router.delete(
   authorizeOwnership,
   deleteArticle,
 ); // DELETE one
+
+// Draft workflow routes
+router.get("/my/articles", protect, getMyArticles); // GET author's own articles (all statuses)
+router.post(
+  "/:id/submit",
+  protect,
+  authorizeRoles("admin", "author"),
+  validateParams(articleIdSchema),
+  submitForReview,
+); // Submit draft for review
+
+// Admin review routes
+router.get(
+  "/admin/pending",
+  protect,
+  authorizeRoles("admin"),
+  getPendingArticles,
+); // GET pending articles for review
+router.post(
+  "/:id/approve",
+  protect,
+  authorizeRoles("admin"),
+  validateParams(articleIdSchema),
+  approveArticle,
+); // Approve article
+router.post(
+  "/:id/reject",
+  protect,
+  authorizeRoles("admin"),
+  validateParams(articleIdSchema),
+  validate(rejectArticleSchema),
+  rejectArticle,
+); // Reject article with reason
 
 export default router;

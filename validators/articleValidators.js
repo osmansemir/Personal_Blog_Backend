@@ -131,3 +131,16 @@ export const articleSlugSchema = z.object({
       "Invalid slug format. Must be lowercase, alphanumeric, and can contain hyphens",
     ),
 });
+
+/**
+ * Validation schema for rejecting an article
+ */
+export const rejectArticleSchema = z.object({
+  reason: z
+    .string({
+      required_error: "Rejection reason is required",
+    })
+    .min(10, "Rejection reason must be at least 10 characters")
+    .max(500, "Rejection reason must not exceed 500 characters")
+    .trim(),
+});

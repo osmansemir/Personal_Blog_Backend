@@ -59,3 +59,24 @@ export const authorizeOwnership = async (req, res, next) => {
     next(error);
   }
 };
+
+// Optional authentication - doesn't fail if no token
+export const optionalAuth = async (req, res, next) => {
+  let token;
+
+  try {
+    if (
+      req.headers.authorization &&
+      req.headers.authorization.startsWith("Bearer")
+    ) {
+      token = req.headers.authorization.split(" ")[1];
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      req.user = await User.findById(decoded.id).select("-password");
+    }
+    // Continue regardless of token presence
+    next();
+  } catch (error) {
+    // If token is invalid, just continue without user
+    next();
+  }
+};
