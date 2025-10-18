@@ -8,6 +8,7 @@ import authRoutes from "./routes/authRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import mongoose from "mongoose";
 import errorHandler from "./middleware/errorMiddleware.js";
+import { apiLimiter } from "./middleware/rateLimiter.js";
 
 dotenv.config();
 
@@ -16,9 +17,38 @@ await connectDB();
 
 const app = express();
 
-app.use(cors());
-if (process.env.NODE_ENV === "development") app.use(morgan("tiny"));
-app.use(express.json()); // Parse incoming JSON
+// CORS Configuration
+const corsOptions = {
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps or Postman)
+    if (!origin) return callback(null, true);
+
+    // Parse allowed origins from environment variable
+    const allowedOrigins = process.env.ALLOWED_ORIGINS
+      ? process.env.ALLOWED_ORIGINS.split(",").map((o) => o.trim())
+      : ["http://localhost:3000", "http://localhost:5173"]; // Default for development
+
+    if (allowedOrigins.includes(origin) || process.env.NODE_ENV === "development") {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true, // Allow cookies to be sent
+  optionsSuccessStatus: 200,
+};
+
+app.use(cors(corsOptions));
+
+// Logging
+if (process.env.NODE_ENV === "development") app.use(morgan("dev"));
+
+// Body parser
+app.use(express.json({ limit: "10mb" })); // Parse incoming JSON with size limit
+app.use(express.urlencoded({ extended: true, limit: "10mb" })); // Parse URL-encoded data
+
+// General API rate limiting (applies to all routes)
+app.use("/api/", apiLimiter);
 
 // Mount the routes
 app.use("/api/articles", articleRoutes);

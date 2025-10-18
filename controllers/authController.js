@@ -10,8 +10,13 @@ export const registerUser = async (req, res, next) => {
     const existingUser = await User.findOne({ email });
     if (existingUser) throw createError(400, "Email already registered");
 
+    //  Security: Only allow 'user' or 'author' roles during self-registration
+    //  Admin role can only be assigned by existing admins via separate endpoint
+    const allowedRoles = ["user", "author"];
+    const userRole = allowedRoles.includes(role) ? role : "user";
+
     //  Create user
-    const newUser = new User({ name, email, password, role });
+    const newUser = new User({ name, email, password, role: userRole });
     await newUser.save();
 
     //  Return response
@@ -30,7 +35,6 @@ export const loginUser = async (req, res, next) => {
     if (!user) throw createError(400, "Invalid email or password");
 
     //  Compare entered password with stored hash
-    console.log(req.body);
     const isMatch = await user.comparePassword(password);
     if (!isMatch) throw createError(400, "Invalid email or password");
 
