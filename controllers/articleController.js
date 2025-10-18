@@ -12,8 +12,36 @@ export const getArticles = async (req, res, next) => {
 
     // Build query with optional filters
     const query = {};
+
+    // Featured filter
     if (req.query.featured === "true") query.featured = true;
+
+    // Tags filter
     if (req.query.tags) query.tags = { $in: req.query.tags.split(",") };
+
+    // Search filter (title or description)
+    if (req.query.search) {
+      query.$or = [
+        { title: { $regex: req.query.search, $options: "i" } },
+        { description: { $regex: req.query.search, $options: "i" } },
+      ];
+    }
+
+    // Date range filter
+    if (req.query.startDate || req.query.endDate) {
+      query.createdAt = {};
+      if (req.query.startDate) {
+        query.createdAt.$gte = new Date(req.query.startDate);
+      }
+      if (req.query.endDate) {
+        query.createdAt.$lte = new Date(req.query.endDate);
+      }
+    }
+
+    // Author filter
+    if (req.query.author) {
+      query.author = req.query.author;
+    }
 
     // Sort options (default: newest first)
     const sortBy = req.query.sortBy || "createdAt";

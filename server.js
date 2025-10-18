@@ -10,6 +10,7 @@ import userRoutes from "./routes/userRoutes.js";
 import mongoose from "mongoose";
 import errorHandler from "./middleware/errorMiddleware.js";
 import { apiLimiter } from "./middleware/rateLimiter.js";
+import logger from "./utils/logger.js";
 
 dotenv.config();
 
@@ -69,32 +70,42 @@ app.use("/api/articles", articleRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 
+// 404 Handler - Catch all undefined routes
+app.use((req, res, next) => {
+  res.status(404).json({
+    success: false,
+    statusCode: 404,
+    message: `Route ${req.method} ${req.originalUrl} not found`,
+  });
+});
+
 // Error Middleware
 app.use(errorHandler);
 
 // START SERVER
 const PORT = process.env.PORT || 5000;
 const server = app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
+  logger.info(`🚀 Server running on port ${PORT}`);
+  logger.info(`🌍 Environment: ${process.env.NODE_ENV || "development"}`);
 });
 
 // GRACEFUL SHUTDOWN
 process.on("SIGINT", async () => {
-  console.log("\n⏸️ Shutting down gracefully...");
+  logger.info("\n⏸️  Shutting down gracefully...");
   await mongoose.connection.close();
-  console.log("✅ Database connection closed");
+  logger.info("✅ Database connection closed");
   server.close(() => {
-    console.log("✅ Server closed");
+    logger.info("✅ Server closed");
     process.exit(0);
   });
 });
 
 // Handle other shutdown signals
 process.on("SIGTERM", async () => {
-  console.log("\n⏸️  Shutting down gracefully...");
+  logger.info("\n⏸️  Shutting down gracefully...");
   await mongoose.connection.close();
   server.close(() => {
-    console.log("✅ Server closed");
+    logger.info("✅ Server closed");
     process.exit(0);
   });
 });
