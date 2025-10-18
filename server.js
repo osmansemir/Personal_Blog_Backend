@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
+import helmet from "helmet";
 import connectDB from "./config/db.js";
 import morgan from "morgan";
 import articleRoutes from "./routes/articleRoutes.js";
@@ -16,6 +17,19 @@ dotenv.config();
 await connectDB();
 
 const app = express();
+
+// Security Headers - Apply helmet early in the middleware chain
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+      },
+    },
+    crossOriginEmbedderPolicy: false, // Disable if causing CORS issues
+  }),
+);
 
 // CORS Configuration
 const corsOptions = {
