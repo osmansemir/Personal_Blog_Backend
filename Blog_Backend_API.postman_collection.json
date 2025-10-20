@@ -1,0 +1,792 @@
+{
+	"info": {
+		"_postman_id": "blog-backend-api-v1",
+		"name": "Blog Backend API",
+		"description": "Complete API collection for Blog Backend with authentication, articles, and admin workflow",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "1. Authentication",
+			"item": [
+				{
+					"name": "Register User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    pm.test(\"User registered successfully\", function() {",
+									"        pm.response.to.have.status(201);",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Test User\",\n  \"email\": \"user@test.com\",\n  \"password\": \"password123\",\n  \"role\": \"user\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/register",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "auth", "register"]
+						},
+						"description": "Register a new user with 'user' role"
+					},
+					"response": []
+				},
+				{
+					"name": "Register Author",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    pm.test(\"Author registered successfully\", function() {",
+									"        pm.response.to.have.status(201);",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Test Author\",\n  \"email\": \"author@test.com\",\n  \"password\": \"password123\",\n  \"role\": \"author\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/register",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "auth", "register"]
+						},
+						"description": "Register a new user with 'author' role"
+					},
+					"response": []
+				},
+				{
+					"name": "Login User/Author",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.environment.set(\"token\", jsonData.token);",
+									"    pm.environment.set(\"userId\", jsonData.user.id);",
+									"    ",
+									"    pm.test(\"Login successful\", function() {",
+									"        pm.response.to.have.status(200);",
+									"        pm.expect(jsonData.token).to.be.a('string');",
+									"    });",
+									"    ",
+									"    console.log(\"✅ Token saved:\", jsonData.token);",
+									"    console.log(\"✅ User ID saved:\", jsonData.user.id);",
+									"    console.log(\"✅ Role:\", jsonData.user.role);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"author@test.com\",\n  \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/login",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "auth", "login"]
+						},
+						"description": "Login as user or author. Token is automatically saved to environment."
+					},
+					"response": []
+				},
+				{
+					"name": "Login Admin",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.environment.set(\"token\", jsonData.token);",
+									"    pm.environment.set(\"userId\", jsonData.user.id);",
+									"    ",
+									"    pm.test(\"Admin login successful\", function() {",
+									"        pm.response.to.have.status(200);",
+									"        pm.expect(jsonData.user.role).to.equal('admin');",
+									"    });",
+									"    ",
+									"    console.log(\"✅ Admin Token saved:\", jsonData.token);",
+									"    console.log(\"✅ Admin ID saved:\", jsonData.user.id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"admin@test.com\",\n  \"password\": \"admin123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/login",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "auth", "login"]
+						},
+						"description": "Login as admin. Make sure you have an admin user in your database."
+					},
+					"response": []
+				}
+			],
+			"description": "Authentication endpoints for user registration and login"
+		},
+		{
+			"name": "2. Users",
+			"item": [
+				{
+					"name": "Get All Users (Admin)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function() {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response is an array\", function() {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.be.an('array');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/users",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "users"]
+						},
+						"description": "Get all users. Admin only."
+					},
+					"response": []
+				},
+				{
+					"name": "Get User by ID (Admin)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/users/{{userId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "users", "{{userId}}"]
+						},
+						"description": "Get a specific user by ID. Admin only."
+					},
+					"response": []
+				},
+				{
+					"name": "Upgrade to Author",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    pm.test(\"Successfully upgraded to author\", function() {",
+									"        var jsonData = pm.response.json();",
+									"        pm.expect(jsonData.user.role).to.equal('author');",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/users/upgrade-to-author",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "users", "upgrade-to-author"]
+						},
+						"description": "Upgrade current user from 'user' role to 'author' role"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete User (Admin)",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/users/{{userId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "users", "{{userId}}"]
+						},
+						"description": "Delete a user. Admin only."
+					},
+					"response": []
+				}
+			],
+			"description": "User management endpoints"
+		},
+		{
+			"name": "3. Articles - Public",
+			"item": [
+				{
+					"name": "Get All Articles (Public)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function() {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has pagination data\", function() {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('data');",
+									"    pm.expect(jsonData).to.have.property('pagination');",
+									"    pm.expect(jsonData.data).to.be.an('array');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/articles?page=1&limit=10",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "articles"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								}
+							]
+						},
+						"description": "Get all approved articles with pagination. No authentication required."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Article by Slug",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/articles/{{articleSlug}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "articles", "{{articleSlug}}"]
+						},
+						"description": "Get a single article by its slug. No authentication required."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Articles by Author ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/articles/user/{{userId}}?page=1&limit=10",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "articles", "user", "{{userId}}"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								}
+							]
+						},
+						"description": "Get all articles by a specific author. No authentication required."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Featured Articles",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/articles?featured=true&page=1&limit=10",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "articles"],
+							"query": [
+								{
+									"key": "featured",
+									"value": "true"
+								},
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								}
+							]
+						},
+						"description": "Get only featured articles"
+					},
+					"response": []
+				},
+				{
+					"name": "Search Articles",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/articles?search=nodejs&tags=javascript,backend&sortBy=createdAt&order=desc&page=1&limit=10",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "articles"],
+							"query": [
+								{
+									"key": "search",
+									"value": "nodejs",
+									"description": "Search in title and description"
+								},
+								{
+									"key": "tags",
+									"value": "javascript,backend",
+									"description": "Comma-separated tags"
+								},
+								{
+									"key": "sortBy",
+									"value": "createdAt",
+									"description": "Field to sort by"
+								},
+								{
+									"key": "order",
+									"value": "desc",
+									"description": "asc or desc"
+								},
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								}
+							]
+						},
+						"description": "Search articles with filters, tags, and sorting"
+					},
+					"response": []
+				},
+				{
+					"name": "Filter by Date Range",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/articles?startDate=2025-01-01&endDate=2025-12-31&page=1&limit=10",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "articles"],
+							"query": [
+								{
+									"key": "startDate",
+									"value": "2025-01-01"
+								},
+								{
+									"key": "endDate",
+									"value": "2025-12-31"
+								},
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								}
+							]
+						},
+						"description": "Filter articles by creation date range"
+					},
+					"response": []
+				}
+			],
+			"description": "Public article endpoints (no authentication required)"
+		},
+		{
+			"name": "4. Articles - Author",
+			"item": [
+				{
+					"name": "Create Article",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.environment.set(\"articleId\", jsonData._id);",
+									"    pm.environment.set(\"articleSlug\", jsonData.slug);",
+									"    ",
+									"    pm.test(\"Article created successfully\", function() {",
+									"        pm.response.to.have.status(201);",
+									"        pm.expect(jsonData.status).to.equal('draft');",
+									"    });",
+									"    ",
+									"    console.log(\"✅ Article ID saved:\", jsonData._id);",
+									"    console.log(\"✅ Article Slug saved:\", jsonData.slug);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Getting Started with Node.js and Express\",\n  \"slug\": \"getting-started-with-nodejs-and-express\",\n  \"description\": \"A comprehensive guide to building RESTful APIs with Node.js and Express framework. Learn about middleware, routing, and authentication.\",\n  \"markdown\": \"# Introduction\\n\\nNode.js is a powerful JavaScript runtime built on Chrome's V8 engine...\\n\\n## What is Express?\\n\\nExpress is a minimal and flexible Node.js web application framework...\\n\\n## Installation\\n\\n```bash\\nnpm install express\\n```\\n\\n## Creating Your First Server\\n\\n```javascript\\nconst express = require('express');\\nconst app = express();\\n\\napp.get('/', (req, res) => {\\n  res.send('Hello World!');\\n});\\n\\napp.listen(3000, () => {\\n  console.log('Server running on port 3000');\\n});\\n```\\n\\n## Conclusion\\n\\nExpress makes it easy to build robust APIs with Node.js.\",\n  \"tags\": [\"nodejs\", \"javascript\", \"backend\", \"express\", \"api\"],\n  \"featured\": false\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/articles",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "articles"]
+						},
+						"description": "Create a new article. Requires author or admin role. Rate limited to 10 per hour."
+					},
+					"response": []
+				},
+				{
+					"name": "Get My Articles",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/articles/my/articles?page=1&limit=10",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "articles", "my", "articles"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								},
+								{
+									"key": "status",
+									"value": "draft",
+									"description": "Filter by status: draft, pending, approved, rejected",
+									"disabled": true
+								}
+							]
+						},
+						"description": "Get all articles created by the authenticated user (all statuses)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Article",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Updated: Getting Started with Node.js and Express - 2025 Edition\",\n  \"description\": \"An updated comprehensive guide to building modern RESTful APIs with Node.js and Express framework. Includes ES6+ features, async/await, and best practices for 2025.\",\n  \"tags\": [\"nodejs\", \"javascript\", \"backend\", \"express\", \"api\", \"tutorial\", \"2025\"]\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/articles/{{articleId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "articles", "{{articleId}}"]
+						},
+						"description": "Update an article. Only the owner or admin can update. Protected fields cannot be modified."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Article",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/articles/{{articleId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "articles", "{{articleId}}"]
+						},
+						"description": "Delete an article. Only the owner or admin can delete."
+					},
+					"response": []
+				},
+				{
+					"name": "Submit Article for Review",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    pm.test(\"Article submitted for review\", function() {",
+									"        var jsonData = pm.response.json();",
+									"        pm.expect(jsonData.article.status).to.equal('pending');",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/articles/{{articleId}}/submit",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "articles", "{{articleId}}", "submit"]
+						},
+						"description": "Submit a draft or rejected article for admin review. Status changes to 'pending'."
+					},
+					"response": []
+				}
+			],
+			"description": "Article management endpoints for authors"
+		},
+		{
+			"name": "5. Articles - Admin Workflow",
+			"item": [
+				{
+					"name": "Get Pending Articles",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/articles/admin/pending?page=1&limit=10",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "articles", "admin", "pending"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								},
+								{
+									"key": "sortBy",
+									"value": "submittedAt",
+									"description": "Default: oldest first (FIFO queue)",
+									"disabled": true
+								}
+							]
+						},
+						"description": "Get all articles pending review. Admin only. Sorted oldest first by default."
+					},
+					"response": []
+				},
+				{
+					"name": "Approve Article",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    pm.test(\"Article approved successfully\", function() {",
+									"        var jsonData = pm.response.json();",
+									"        pm.expect(jsonData.article.status).to.equal('approved');",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/articles/{{articleId}}/approve",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "articles", "{{articleId}}", "approve"]
+						},
+						"description": "Approve a pending article. Admin only. Article becomes public."
+					},
+					"response": []
+				},
+				{
+					"name": "Reject Article",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    pm.test(\"Article rejected successfully\", function() {",
+									"        var jsonData = pm.response.json();",
+									"        pm.expect(jsonData.article.status).to.equal('rejected');",
+									"        pm.expect(jsonData.article.rejectionReason).to.be.a('string');",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"reason\": \"The article needs more technical depth in the implementation section. Please add more code examples demonstrating error handling and edge cases. Also, the section on middleware needs better explanation with practical examples. Consider adding a section on security best practices.\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/articles/{{articleId}}/reject",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "articles", "{{articleId}}", "reject"]
+						},
+						"description": "Reject a pending article with feedback. Admin only. Author can revise and resubmit."
+					},
+					"response": []
+				}
+			],
+			"description": "Admin workflow endpoints for article moderation"
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:5000",
+			"type": "string"
+		}
+	]
+}
