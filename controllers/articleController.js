@@ -73,6 +73,27 @@ export const getArticles = async (req, res, next) => {
   }
 };
 
+// Get all slugs
+export const getSlugs = async (req, res, next) => {
+  try {
+    const articles = await Article.find().select("slug");
+    res.json(articles);
+  } catch (err) {
+    next(err);
+  }
+};
+
+// Get all tags
+export const getTags = async (req, res, next) => {
+  try {
+    const articles = await Article.find().select("tags");
+    const tags = [...new Set(articles.flatMap((article) => article.tags))];
+    res.json(tags);
+  } catch (err) {
+    next(err);
+  }
+};
+
 // Get User articles with pagination
 export const getUserArticles = async (req, res, next) => {
   try {
@@ -115,9 +136,22 @@ export const getArticle = async (req, res, next) => {
   }
 };
 
+// Get a single article by Id
+export const getArticleById = async (req, res, next) => {
+  try {
+    const article = await Article.findOne({ _id: req.params.id })
+      .populate("author", "name email role") // Populate author details
+      .select("-__v");
+    if (!article) throw createError(404, "Article not found");
+    res.json(article);
+  } catch (err) {
+    next(err);
+  }
+};
+
 // Create a new article
 export const createArticle = async (req, res, next) => {
-  const { title, slug, tags, description, markdown, featured } = req.body;
+  const { title, slug, tags, description, markdown } = req.body;
 
   const newArticle = new Article({
     title,
@@ -125,7 +159,6 @@ export const createArticle = async (req, res, next) => {
     tags,
     description,
     markdown,
-    featured,
     author: req.user._id,
   });
 
@@ -300,10 +333,7 @@ export const approveArticle = async (req, res, next) => {
     if (!article) throw createError(404, "Article not found");
 
     if (article.status !== "pending") {
-      throw createError(
-        400,
-        "Can only approve articles with pending status",
-      );
+      throw createError(400, "Can only approve articles with pending status");
     }
 
     article.status = "approved";
@@ -338,10 +368,7 @@ export const rejectArticle = async (req, res, next) => {
     if (!article) throw createError(404, "Article not found");
 
     if (article.status !== "pending") {
-      throw createError(
-        400,
-        "Can only reject articles with pending status",
-      );
+      throw createError(400, "Can only reject articles with pending status");
     }
 
     article.status = "rejected";

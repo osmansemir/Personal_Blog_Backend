@@ -1,6 +1,7 @@
 import express from "express";
 import {
   getArticles,
+  getArticleById,
   getArticle,
   getUserArticles,
   createArticle,
@@ -11,6 +12,8 @@ import {
   getPendingArticles,
   approveArticle,
   rejectArticle,
+  getSlugs,
+  getTags,
 } from "../controllers/articleController.js";
 import {
   protect,
@@ -32,8 +35,11 @@ const router = express.Router();
 
 // Public routes (with optional auth for admin status filtering)
 router.get("/", optionalAuth, getArticles); // GET all approved (or filter by status if admin)
+router.get("/slugs", getSlugs); // GET all slugs
+router.get("/tags", getTags); // GET all tags
 router.get("/user/:id", validateParams(articleIdSchema), getUserArticles); // GET all articles of one user
 router.get("/:slug", validateParams(articleSlugSchema), getArticle); // GET one by slug
+router.get("/by-id/:id", validateParams(articleIdSchema), getArticleById); // GET one by Id
 router.post(
   "/",
   protect,
@@ -43,7 +49,7 @@ router.post(
   createArticle,
 ); // POST create
 router.put(
-  "/:id",
+  "/edit/:id",
   protect,
   authorizeRoles("admin", "author"),
   validateParams(articleIdSchema),
@@ -52,7 +58,7 @@ router.put(
   updateArticle,
 ); // PUT update
 router.delete(
-  "/:id",
+  "/delete/:id",
   protect,
   authorizeRoles("admin", "author"),
   validateParams(articleIdSchema),

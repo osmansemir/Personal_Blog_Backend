@@ -3,7 +3,6 @@ import cors from "cors";
 import dotenv from "dotenv";
 import helmet from "helmet";
 import connectDB from "./config/db.js";
-import morgan from "morgan";
 import articleRoutes from "./routes/articleRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
@@ -11,6 +10,10 @@ import mongoose from "mongoose";
 import errorHandler from "./middleware/errorMiddleware.js";
 import { apiLimiter } from "./middleware/rateLimiter.js";
 import logger from "./utils/logger.js";
+import {
+  morganMiddleware,
+  captureResponseBody,
+} from "./middleware/morganMiddleware.js";
 
 dotenv.config();
 
@@ -43,7 +46,10 @@ const corsOptions = {
       ? process.env.ALLOWED_ORIGINS.split(",").map((o) => o.trim())
       : ["http://localhost:3000", "http://localhost:5173"]; // Default for development
 
-    if (allowedOrigins.includes(origin) || process.env.NODE_ENV === "development") {
+    if (
+      allowedOrigins.includes(origin) ||
+      process.env.NODE_ENV === "development"
+    ) {
       callback(null, true);
     } else {
       callback(new Error("Not allowed by CORS"));
@@ -55,8 +61,9 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 
-// Logging
-if (process.env.NODE_ENV === "development") app.use(morgan("dev"));
+// Morgan Logging
+app.use(captureResponseBody);
+if (process.env.NODE_ENV === "development") app.use(morganMiddleware);
 
 // Body parser
 app.use(express.json({ limit: "10mb" })); // Parse incoming JSON with size limit

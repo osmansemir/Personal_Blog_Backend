@@ -144,3 +144,4 @@ export const rejectArticleSchema = z.object({
     .max(500, "Rejection reason must not exceed 500 characters")
     .trim(),
 });
+
