@@ -5,7 +5,9 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "dev": "nodemon server.js"
+    "dev": "nodemon server.js",
+    "build": "echo 'Build complete - no compilation needed for JavaScript'",
+    "start": "node server.js"
   },
   "keywords": [],
   "author": "",
